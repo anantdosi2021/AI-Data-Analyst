@@ -40,7 +40,7 @@ if uploaded_file:
             st.error("Please add your GOOGLE_API_KEY to the settings!")
         else:
             # We initialize Gemini here
-            llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+            llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=api_key)
             
             # We give the AI a summary of the data so it can answer accurately (RAG logic)
             data_summary = f"The total sales are {total_sales} and average sale is {avg_sales}."
