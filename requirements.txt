@@ -1,4 +1,4 @@
-langchain-google-genai>=2.0.0
-streamlit
 pandas
+streamlit
+langchain-groq
 python-dotenv
