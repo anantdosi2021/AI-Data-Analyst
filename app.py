@@ -1,27 +1,52 @@
 import streamlit as st
 import pandas as pd
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 import os
 
-load_dotenv() # Loads your API Key from a .env file
+# 1. SETUP: Load API Key
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
 
-st.title("🤖 AI Business Analyst")
+st.set_page_config(page_title="AI Business Analyst", layout="wide")
+st.title("🤖 AI Business Analyst (Powered by Gemini)")
 
-# 1. DATA ANALYTICS: Upload and Process
+# 2. DATA ANALYTICS: Upload and Process
 uploaded_file = st.file_uploader("Upload your Sales CSV", type="csv")
+
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-    st.write("### Data Preview", df.head())
     
-    # Simple calculation
-    total_sales = df['Sales'].sum()
-    st.metric("Total Sales", f"${total_sales:,.2f}")
+    # Create two columns for the UI
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("### Data Preview")
+        st.dataframe(df.head())
+    
+    with col2:
+        st.write("### Quick Metrics")
+        total_sales = df['Sales'].sum()
+        avg_sales = df['Sales'].mean()
+        st.metric("Total Revenue", f"${total_sales:,.2f}")
+        st.metric("Average Sale Value", f"${avg_sales:,.2f}")
 
-    # 2. AGENTIC AI: Ask questions about the data
-    user_query = st.text_input("Ask me anything about your data:")
+    # 3. AGENTIC AI: Context-Aware Chat
+    st.divider()
+    user_query = st.text_input("Ask the AI Agent about your business trends:")
+
     if user_query:
-        llm = ChatOpenAI(model="gpt-3.5-turbo")
-        # In a real RAG, you'd feed the 'df' summary here
-        response = llm.invoke(f"Based on these sales of {total_sales}, answer: {user_query}")
-        st.write("### AI Response:", response.content)
+        if not api_key:
+            st.error("Please add your GOOGLE_API_KEY to the settings!")
+        else:
+            # We initialize Gemini here
+            llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+            
+            # We give the AI a summary of the data so it can answer accurately (RAG logic)
+            data_summary = f"The total sales are {total_sales} and average sale is {avg_sales}."
+            prompt = f"System: You are a business expert. Data: {data_summary}. Question: {user_query}"
+            
+            with st.spinner("Analyzing..."):
+                response = llm.invoke(prompt)
+                st.write("### AI Insight:")
+                st.info(response.content)
