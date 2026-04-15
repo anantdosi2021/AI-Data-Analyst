@@ -2,3 +2,4 @@ pandas
 streamlit
 langchain-google-genai
 python-dotenv
+langchain-google-genai>=2.0.0
